@@ -5,8 +5,6 @@
    [Download Link](https://drive.google.com/file/d/1Spm8ambCyxjYmBZS8J0Jc9DSeZG5w7Q3/view?usp=drive_link)  
 2. **Dataset Part 2**: Contains the second segment of the data.  
    [Download Link](https://drive.google.com/file/d/1OQy3utH04MXNBXPHpSu55hHLojVbSxk5/view?usp=drive_link)  
-3. **Dataset Part 3**: Contains the third segment of the data.  
-   [Download Link](https://drive.google.com/file/d/1xSZyJvgc_7SM7tWs1a0ZyU_1WnBSsr-1/view?usp=drive_link)  
 
 ---
 
