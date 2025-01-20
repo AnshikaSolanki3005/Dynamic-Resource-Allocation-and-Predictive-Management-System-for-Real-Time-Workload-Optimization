@@ -11,7 +11,7 @@ from dataclasses import dataclass
 class DataIngestionConfig:
     train_data_path: str=os.path.join('artifacts',"train.csv")
     test_data_path: str=os.path.join('artifacts',"test.csv")
-    raw_data_path: str=os.path.join('artifacts',"new_df.csv")
+    raw_data_path: str=os.path.join('artifacts',"data.csv")
 
 class DataIngestion:
     def __init__(self):
@@ -20,8 +20,7 @@ class DataIngestion:
     def initiate_data_ingestion(self):
         logging.info("Enter the data ingestion method or component")
         try:
-            df=pd.read_csv('notebooks\new_df.csv')
-            
+            df=pd.read_csv('notebook/data.csv')
             
             logging.info('Read the dataframe')
             
@@ -29,7 +28,7 @@ class DataIngestion:
             
             df.to_csv(self.ingestion_config.raw_data_path,index=False,header=True)
 
-            logging.info("Train test split initiated ")
+            logging.info("Train test split initiated")
             train_set,test_set=train_test_split(df,test_size= 0.2,random_state=42)      
         
             train_set.to_csv(self.ingestion_config.train_data_path,index=False,header=True)
@@ -37,10 +36,14 @@ class DataIngestion:
             
             logging.info("Ingestion of the data is completed")
 
-
-            return
+            return(
             self.ingestion_config.train_data_path,
-            self.x=global()
+            self.ingestion_config.test_data_path
+            )
 
-        catch:
-            pass
+        except Exception as e:
+            raise CustomException(e,sys)
+        
+if __name__=="__main__":
+    obj=DataIngestion()
+    obj.initiate_data_ingestion()
