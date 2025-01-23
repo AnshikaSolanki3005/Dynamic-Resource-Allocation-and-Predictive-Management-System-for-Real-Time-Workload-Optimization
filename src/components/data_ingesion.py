@@ -10,9 +10,6 @@ from src.exception import CustomException
 from src.logger import logging
 from src.components.data_transformation import DataTransformationConfig
 
-# Add the project src directory to the Python path
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
-
 @dataclass
 class DataIngestionConfig:
     train_data_path: str = os.path.join('artifacts', "train.csv")
