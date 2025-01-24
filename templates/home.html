@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telecom Cloud Resource Allocator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background: linear-gradient(to bottom, #004080, #001f3f);
+            color: white;
+        }
+        .header {
+            text-align: center;
+            padding: 40px 20px;
+            background: #003366;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .header h1 {
+            font-size: 2.5em;
+        }
+        .header p {
+            font-size: 1.2em;
+            margin-top: 10px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 30px auto;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+        .container h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .form-group input, 
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .form-group button {
+            width: 100%;
+            padding: 10px;
+            background-color: #00509E;
+            color: white;
+            font-size: 1em;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .form-group button:hover {
+            background-color: #003366;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Telecom Cloud Resource Allocator</h1>
+        <p>Optimize your cloud resource allocation dynamically based on workload and demand.</p>
+    </div>
+    <div class="container">
+        <h2>Resource Allocation Predictor</h2>
+        <form action="{{ url_for('predict_resource_allocation') }}" method="post">
+            <div class="form-group">
+                <label for="timestamp">Timestamp</label>
+                <input type="text" id="timestamp" name="timestamp" placeholder="Enter the timestamp" required>
+            </div>
+            <div class="form-group">
+                <label for="node">Node</label>
+                <input type="text" id="node" name="node" placeholder="Enter the node" required>
+            </div>
+            <div class="form-group">
+                <label for="cpu_workloads">CPU Workloads</label>
+                <input type="number" id="cpu_workloads" name="cpu_workloads" placeholder="Enter CPU workloads" required min="0">
+            </div>
+            <div class="form-group">
+                <label for="memory_workloads">Memory Workloads</label>
+                <input type="number" id="memory_workloads" name="memory_workloads" placeholder="Enter memory workloads" required min="0">
+            </div>
+            <div class="form-group">
+                <label for="nvidia_com_gpu_workloads">NVIDIA GPU Workloads</label>
+                <input type="number" id="nvidia_com_gpu_workloads" name="nvidia_com_gpu_workloads" placeholder="Enter NVIDIA GPU workloads" required min="0">
+            </div>
+            <div class="form-group">
+                <label for="status">Status</label>
+                <input type="text" id="status" name="status" placeholder="Enter resource status" required>
+            </div>
+            <div class="form-group">
+                <label for="condition">Condition</label>
+                <input type="text" id="condition" name="condition" placeholder="Enter current condition" required>
+            </div>
+            <div class="form-group">
+                <label for="scenario_workloads">Scenario Workloads</label>
+                <input type="number" id="scenario_workloads" name="scenario_workloads" placeholder="Enter scenario workloads" required min="0">
+            </div>
+            <div class="form-group">
+                <label for="uid">UID</label>
+                <input type="text" id="uid" name="uid" placeholder="Enter unique identifier" required>
+            </div>
+            <div class="form-group">
+                <label for="cpu_allocatable">CPU Allocatable</label>
+                <input type="number" id="cpu_allocatable" name="cpu_allocatable" placeholder="Enter CPU allocatable" required min="0">
+            </div>
+            <div class="form-group">
+                <label for="memory_allocatable">Memory Allocatable</label>
+                <input type="number" id="memory_allocatable" name="memory_allocatable" placeholder="Enter memory allocatable" required min="0">
+            </div>
+            <div class="form-group">
+                <label for="nvidia_com_gpu_allocatable">NVIDIA GPU Allocatable</label>
+                <input type="number" id="nvidia_com_gpu_allocatable" name="nvidia_com_gpu_allocatable" placeholder="Enter NVIDIA GPU allocatable" required min="0">
+            </div>
+            <div class="form-group">
+                <label for="scenario_allocatable">Scenario Allocatable</label>
+                <input type="number" id="scenario_allocatable" name="scenario_allocatable" placeholder="Enter scenario allocatable" required min="0">
+            </div>
+            <div class="form-group">
+                <button type="submit">Allocate Resources</button>
+            </div>
+        </form>
+        <h2>Prediction Result</h2>
+        <p>The system prediction is: {{results}}</p>
+    </div>
+</body>
+</html>
