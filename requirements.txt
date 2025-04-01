@@ -5,5 +5,8 @@ seaborn
 scikit-learn
 xgboost
 dill
-flask
+fastapi
+uvicorn
+pydantic
+joblib
 -e .
