@@ -34,8 +34,7 @@ class ModelTrainer:
             models = {
                 "Random Forest": RandomForestRegressor(),
                 "Linear Regression": LinearRegression(),
-                "XGBRegressor": XGBRegressor(),
-                "Support Vector Regressor": SVR()
+                "XGBRegressor": XGBRegressor()
             }
 
             params = {
@@ -46,14 +45,8 @@ class ModelTrainer:
                 "Random Forest": {
                     'n_estimators': [8, 16, 32, 64, 128, 256]
                 },
-                "Linear Regression": {},
-                "Support Vector Regressor": {
-                    'C': [0.1, 1, 10, 100, 1000],
-                    'kernel': ['linear', 'poly', 'rbf', 'sigmoid'],
-                    'gamma': ['scale', 'auto', 0.01, 0.1, 1],
-                    'epsilon': [0.01, 0.1, 0.5, 1.0],
-                    'degree': [2, 3, 4]
-                }
+                "Linear Regression": {}
+                
             }
 
             model_report: dict = evaluate_models(

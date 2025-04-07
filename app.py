@@ -1,56 +1,55 @@
-from fastapi import FastAPI
-from pydantic import BaseModel
-from src.pipeline.predict_pipeline import PredictPipeline, CustomData
-import uvicorn
+import streamlit as st
+import pandas as pd
+import numpy as np
+import os
+from src.utils import load_object
+from src.components.data_transformation import DataTransformation
 
-# Initialize the FastAPI app
-app = FastAPI()
+def load_model():
+    """Load the trained model and preprocessor."""
+    model_path = os.path.join("artifacts", "model.pkl")
+    preprocessor_path = os.path.join("artifacts", "preprocessor.pkl")
+    model = load_object(model_path)
+    preprocessor = load_object(preprocessor_path)
+    return model, preprocessor
 
-# Define a Pydantic model for incoming requests
-class InputData(BaseModel):
-    timestamp: str
-    node: str
-    cpu_workloads: float
-    memory_workloads: float
-    nvidia_gpu_workloads: str
-    status: str
-    condition: str
-    scenario_workloads: int
-    uid: str
-    cpu_allocatable: float
-    nvidia_gpu_allocatable: float
-    scenario_allocatable: str
+def predict(input_data):
+    """Make predictions using the trained model."""
+    model, preprocessor = load_model()
+    transformed_data = preprocessor.transform(input_data)
+    prediction = model.predict(transformed_data)
+    return prediction
 
-# Create an instance of the PredictPipeline class
-predict_pipeline = PredictPipeline()
+# Streamlit UI
+st.title("Dynamic Resource Allocation Optimization")
+st.write("Upload a CSV file or manually enter data to predict resource utilization.")
 
-@app.post("/predict")
-def predict(data: InputData):
-    # Convert the received data to a CustomData object
-    custom_data = CustomData(
-        timestamp=data.timestamp,
-        node=data.node,
-        cpu_workloads=data.cpu_workloads,
-        memory_workloads=data.memory_workloads,
-        nvidia_gpu_workloads=data.nvidia_gpu_workloads,
-        status=data.status,
-        condition=data.condition,
-        scenario_workloads=data.scenario_workloads,
-        uid=data.uid,
-        cpu_allocatable=data.cpu_allocatable,
-        nvidia_gpu_allocatable=data.nvidia_gpu_allocatable,
-        scenario_allocatable=data.scenario_allocatable,
-    )
+uploaded_file = st.file_uploader("Upload your dataset", type=["csv"])
 
-    # Get the data as a DataFrame for prediction
-    df = custom_data.get_data_as_data_frame()
+if uploaded_file:
+    df = pd.read_csv(uploaded_file)
+    st.write("Uploaded Data:", df.head())
+    
+    if st.button("Predict"):
+        predictions = predict(df)
+        df["Predicted_Resource_Usage"] = predictions
+        st.write("Prediction Results:", df)
+        st.download_button("Download Predictions", df.to_csv(index=False), "predictions.csv", "text/csv")
 
-    # Make predictions using the PredictPipeline
-    predictions = predict_pipeline.predict(df)
+st.subheader("Or enter data manually:")
+cpu_workloads = st.number_input("CPU Workloads", min_value=0.0, value=50.0)
+memory_workloads = st.number_input("Memory Workloads", min_value=0.0, value=16.0)
+nvidia_com_gpu_workloads = st.number_input("GPU Workloads", min_value=0.0, value=5.0)
+cpu_allocatable = st.number_input("CPU Allocatable", min_value=0.0, value=100.0)
+nvidia_com_gpu_allocatable = st.number_input("GPU Allocatable", min_value=0.0, value=10.0)
 
-    # Return the prediction as a response
-    return {"predictions": predictions.tolist()}
-
-# If running this file directly, start the Uvicorn server
-if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+if st.button("Predict Manually"):
+    manual_data = pd.DataFrame({
+        "cpu_workloads": [cpu_workloads],
+        "memory_workloads": [memory_workloads],
+        "nvidia_com_gpu_workloads": [nvidia_com_gpu_workloads],
+        "cpu_allocatable": [cpu_allocatable],
+        "nvidia_com_gpu_allocatable": [nvidia_com_gpu_allocatable]
+    })
+    manual_prediction = predict(manual_data)
+    st.write(f"Predicted Resource Usage: {manual_prediction[0]}")
