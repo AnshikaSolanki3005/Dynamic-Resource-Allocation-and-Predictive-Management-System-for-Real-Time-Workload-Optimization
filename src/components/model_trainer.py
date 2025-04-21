@@ -5,17 +5,16 @@ from dataclasses import dataclass
 from sklearn.metrics import r2_score
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.linear_model import LinearRegression
-from sklearn.svm import SVR
 from xgboost import XGBRegressor
 
 from src.exception import CustomException
 from src.logger import logging
-
-from src.utils import save_object, evaluate_models
+from src.utils import save_object, evaluate_models, load_object
 
 @dataclass
 class ModelTrainerConfig:
     trained_model_file_path = os.path.join("artifacts", "model.pkl")
+    preprocessor_path: str = os.path.join("artifacts", "preprocessor.pkl")
 
 class ModelTrainer:
     def __init__(self):
@@ -32,7 +31,7 @@ class ModelTrainer:
             )
 
             models = {
-                "Random Forest": RandomForestRegressor(),
+                #"Random Forest": RandomForestRegressor(),
                 "Linear Regression": LinearRegression(),
                 "XGBRegressor": XGBRegressor()
             }
@@ -42,11 +41,10 @@ class ModelTrainer:
                     'learning_rate': [0.1, 0.01, 0.05, 0.001],
                     'n_estimators': [8, 16, 32, 64, 128, 256]
                 },
-                "Random Forest": {
+                '''"Random Forest": {
                     'n_estimators': [8, 16, 32, 64, 128, 256]
-                },
+                },'''
                 "Linear Regression": {}
-                
             }
 
             model_report: dict = evaluate_models(
@@ -54,14 +52,8 @@ class ModelTrainer:
                 models=models, params=params
             )
 
-            # Get the best model score
-            best_model_score = max(sorted(model_report.values()))
-
-            # Get the best model name
-            best_model_name = list(model_report.keys())[
-                list(model_report.values()).index(best_model_score)
-            ]
-
+            best_model_score = max(model_report.values())
+            best_model_name = max(model_report, key=model_report.get)
             best_model = models[best_model_name]
 
             if best_model_score < 0.6:
@@ -69,13 +61,20 @@ class ModelTrainer:
 
             logging.info(f"Best model found: {best_model_name}")
 
-            # Save the best model
-            save_object(
-                file_path=self.model_trainer_config.trained_model_file_path,
-                obj=best_model
-            )
+            # Refit the best model
+            best_model.fit(X_train, y_train)
 
-            # Predict and evaluate
+            # Load preprocessor to get feature names
+            preprocessor = load_object(self.model_trainer_config.preprocessor_path)
+            feature_names = preprocessor.get_feature_names_out()
+
+            # Save model and feature info
+            model_bundle = {
+                "model": best_model,
+                "expected_features": feature_names
+            }
+            save_object(self.model_trainer_config.trained_model_file_path, model_bundle)
+
             predicted = best_model.predict(X_test)
             r2_square = r2_score(y_test, predicted)
             return r2_square
