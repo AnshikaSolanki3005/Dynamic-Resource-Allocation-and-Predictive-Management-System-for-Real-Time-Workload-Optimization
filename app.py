@@ -19,20 +19,26 @@ def predict(input_data, from_manual=False):
 
     # If the input is from manual entry, add dummy values for missing categorical columns
     if from_manual:
+        # Ensure missing categorical columns are added with dummy values
         for col in DataTransformation.categorical_columns:
             if col not in input_data.columns:
-                input_data[col] = "dummy"
+                input_data[col] = "dummy"  # Add missing categorical columns with dummy values
 
-    # Reorder input columns to expected order
+    # Reorder columns to match the order the model expects (numerical columns + categorical columns)
     input_data = input_data[DataTransformation.numerical_columns + DataTransformation.categorical_columns]
 
-    # Apply the data transformation pipeline
+    # Apply the data transformation pipeline (scaling, encoding, etc.)
     transformed_data = data_transformer.transform_uploaded_csv(input_data)
 
-    # Align features exactly as the model expects
-    transformed_data = transformed_data.reindex(columns=expected_features, fill_value=0)
+    # Ensure the transformed data matches the expected features in the model
+    try:
+        # Try to reindex the data to match the model's feature names
+        transformed_data = transformed_data[model.feature_names_in_]
+    except AttributeError:
+        # If `feature_names_in_` is not available (common with some versions), fall back to expected_features
+        transformed_data = transformed_data.reindex(columns=expected_features, fill_value=0)
 
-    # Make prediction
+    # Make the prediction
     prediction = model.predict(transformed_data)
     return prediction
 
