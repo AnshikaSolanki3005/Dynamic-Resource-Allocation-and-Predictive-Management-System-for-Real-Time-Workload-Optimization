@@ -7,85 +7,95 @@ from sklearn.compose import ColumnTransformer
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
-from src.utils import save_object, load_object
+
+from src.utils import save_object
+from src.exception import CustomException
+from src.logger import logging
 
 @dataclass
 class DataTransformationConfig:
     preprocessor_obj_file_path: str = os.path.join('artifacts', "preprocessor.pkl")
 
 class DataTransformation:
- 
-    numerical_columns = [
-        "cpu_workloads", "memory_workloads", "nvidia_com_gpu_workloads",
-        "cpu_allocatable", "nvidia_com_gpu_allocatable"
-    ]
-    categorical_columns = [
-        'timestamp', 'node', 'status', 'condition',
-        'scenario_workloads', 'scenario_allocatable', 'uid'
-    ]
 
     def __init__(self):
         self.data_transformation_config = DataTransformationConfig()
 
     def get_data_transformer_object(self):
-        # Numerical features pipeline
-        num_pipeline = Pipeline(steps=[
-            ("imputer", SimpleImputer(strategy="median")),
-            ("scaler", StandardScaler())
-        ])
-
-        # Categorical features pipeline
-        cat_pipeline = Pipeline(steps=[
-            ("imputer", SimpleImputer(strategy="most_frequent")),
-            ("onehot", OneHotEncoder(handle_unknown='ignore', sparse_output=False))
-        ])
-
-        # Combine the two pipelines
-        preprocessor = ColumnTransformer(
-            transformers=[
-                ("num_pipeline", num_pipeline, self.numerical_columns),
-                ("cat_pipeline", cat_pipeline, self.categorical_columns)
-            ]
-        )
-
-        return preprocessor
-
-    def initiate_data_transformation(self, train_path, test_path):
-        # Load the training and testing data
-        train_df = pd.read_csv(train_path)
-        test_df = pd.read_csv(test_path)
-
-        # Get the preprocessing transformer
-        preprocessor = self.get_data_transformer_object()
-
-        # Apply transformations to the train and test datasets
-        train_arr = preprocessor.fit_transform(train_df)
-        test_arr = preprocessor.transform(test_df)
-
-        # Save the preprocessor
-        save_object(self.data_transformation_config.preprocessor_obj_file_path, preprocessor)
-
-        return train_arr, test_arr, self.data_transformation_config.preprocessor_obj_file_path
-
-    def transform_uploaded_csv(self, input_df):
         try:
-            # Load the preprocessor object
-            preprocessor = load_object(self.data_transformation_config.preprocessor_obj_file_path)
+            # Adjusted based on typical workload structure
+            numerical_columns = [
+                "cpu_workloads", "memory_workloads", "nvidia_com_gpu_workloads",
+                "scenario_workloads"
+            ]
 
-            # Ensure the input data has the correct columns and order
-            expected_columns = self.numerical_columns + self.categorical_columns
-            input_df = input_df[expected_columns]
+            categorical_columns = [
+                "status", "condition"
+            ]
 
-            # Transform the input data using the preprocessor
-            transformed_array = preprocessor.transform(input_df)
+            # Pipelines
+            num_pipeline = Pipeline(steps=[
+                ("imputer", SimpleImputer(strategy="median")),
+                ("scaler", StandardScaler())
+            ])
 
-            # Get the feature names (output from OneHotEncoder)
-            feature_names = preprocessor.get_feature_names_out()
+            cat_pipeline = Pipeline(steps=[
+                ("imputer", SimpleImputer(strategy="most_frequent")),
+                ("onehot", OneHotEncoder(handle_unknown="ignore", sparse_output=False))  # Compatible with sklearn >=1.2
+            ])
 
-            # Convert the transformed array to a DataFrame with the proper columns
-            transformed_df = pd.DataFrame(transformed_array, columns=feature_names)
+            preprocessor = ColumnTransformer(transformers=[
+                ("num_pipeline", num_pipeline, numerical_columns),
+                ("cat_pipeline", cat_pipeline, categorical_columns)
+            ])
 
-            return transformed_df
+            logging.info("Preprocessor object created successfully")
+            return preprocessor
 
         except Exception as e:
-            raise Exception(f"Transformation failed: {e}")
+            raise CustomException(str(e), sys)
+
+    def initiate_data_transformation(self, train_path, test_path):
+        try:
+            train_df = pd.read_csv(train_path)
+            test_df = pd.read_csv(test_path)
+
+            logging.info("Read train and test data")
+
+            # ✅ Define the correct target column
+            target_column = "cpu_allocatable"
+
+            # ✅ Check if all required columns are present
+            required_columns = [
+                "cpu_workloads", "memory_workloads", "nvidia_com_gpu_workloads",
+                "scenario_workloads", "status", "condition", target_column
+            ]
+            missing_cols = [col for col in required_columns if col not in train_df.columns]
+            if missing_cols:
+                raise CustomException(f"Missing columns in training data: {missing_cols}", sys)
+
+            # ✅ Split X and y
+            input_features_train = train_df.drop(columns=[target_column])
+            target_feature_train = train_df[target_column]
+
+            input_features_test = test_df.drop(columns=[target_column])
+            target_feature_test = test_df[target_column]
+
+            # ✅ Get and apply preprocessor
+            preprocessor = self.get_data_transformer_object()
+            input_features_train_transformed = preprocessor.fit_transform(input_features_train)
+            input_features_test_transformed = preprocessor.transform(input_features_test)
+
+            logging.info("Transformation applied successfully")
+
+            # ✅ Save the preprocessor
+            save_object(self.data_transformation_config.preprocessor_obj_file_path, preprocessor)
+
+            # ✅ Combine features and targets
+            train_array = np.c_[input_features_train_transformed, target_feature_train.to_numpy()]
+            test_array = np.c_[input_features_test_transformed, target_feature_test.to_numpy()]
+
+            return train_array, test_array, self.data_transformation_config.preprocessor_obj_file_path
+
+        except Exception as e:
+            raise CustomException(str(e), sys)
