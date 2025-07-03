@@ -1,32 +1,27 @@
 import sys
-import logging
+import traceback
 
-def error_message_detail(error,error_detail: sys):
-    __,__,exc_tb=error_detail.exc_info() 
-    '''
-    This will provide us all the info about what,when,where the exception has occured
-    '''
-    
-    file_name=exc_tb.tb_frame.f_code.co_filename   #everything will present in custom exception handling documentation 
-    error_message="Error occured in python script name [{0}] line number[{1}] error_message[{2}]".format(
-    file_name,exc_tb.tb_lineno,str(error)
-    )
+def error_message_detail(error, error_detail: sys):
+    """
+    error: The actual error object
+    error_detail: pass `sys` so we can get traceback
+    """
+    _, _, exc_tb = sys.exc_info()
+
+    if exc_tb is not None:
+        file_name = exc_tb.tb_frame.f_code.co_filename
+        line_number = exc_tb.tb_lineno
+        error_message = f"Error occurred in python script name [{file_name}] line number [{line_number}] error_message [{str(error)}]"
+    else:
+        # Safe fallback if traceback is not available
+        error_message = f"Error: {str(error)}"
+
     return error_message
-    
+
 class CustomException(Exception):
-    def __init__(self,error_message,error_detail:sys):
+    def __init__(self, error_message, error_detail: sys):
         super().__init__(error_message)
-        self.error_message=error_message_detail(error_message,error_detail=error_detail)
-        
+        self.error_message = error_message_detail(error_message, error_detail)
+
     def __str__(self):
         return self.error_message
-    
-    
-if __name__=="__main__":
-    
-    try:
-        a=ZeroDivisionError
-    except Exception as e:
-        logging.info("Divide by Zero")
-        raise CustomException(e, sys)
-    
