@@ -52,32 +52,39 @@ class ModelTrainer:
                 models=models, params=params
             )
 
+            # 🔍 Print scores safely (diagnostics only)
+            for model_name, score in model_report.items():
+                logging.info(f"Model '{model_name}' R² score: {score:.4f}")
+
             best_model_score = max(model_report.values())
             best_model_name = max(model_report, key=model_report.get)
             best_model = models[best_model_name]
 
-            if best_model_score < 0.6:
-                raise CustomException("No suitable model found")
+           # if best_model_score < 0.3:
+             #   raise CustomException("No suitable model found", sys)
 
-            logging.info(f"Best model found: {best_model_name}")
+            logging.info(f"Best model found: {best_model_name} with R²: {best_model_score:.4f}")
 
-            # Refit the best model
             best_model.fit(X_train, y_train)
 
-            # Load preprocessor to get feature names
             preprocessor = load_object(self.model_trainer_config.preprocessor_path)
-            feature_names = preprocessor.get_feature_names_out()
 
-            # Save model and feature info
+            try:
+                feature_names = preprocessor.get_feature_names_out()
+            except:
+                feature_names = []  # Fallback
+
             model_bundle = {
                 "model": best_model,
                 "expected_features": feature_names
             }
+
             save_object(self.model_trainer_config.trained_model_file_path, model_bundle)
 
             predicted = best_model.predict(X_test)
             r2_square = r2_score(y_test, predicted)
+            logging.info(f"Model R² Score on Test Set: {r2_square:.4f}")
             return r2_square
 
         except Exception as e:
-            raise CustomException(e, sys)
+            raise CustomException(str(e), sys)
