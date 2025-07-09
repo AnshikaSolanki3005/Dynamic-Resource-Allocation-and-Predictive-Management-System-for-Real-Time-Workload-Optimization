@@ -53,7 +53,7 @@ class DataTransformation:
             return preprocessor
 
         except Exception as e:
-            raise CustomException(str(e), sys)
+            raise CustomException(e, sys)
 
     def initiate_data_transformation(self, train_path, test_path):
         try:
@@ -98,4 +98,5 @@ class DataTransformation:
             return train_array, test_array, self.data_transformation_config.preprocessor_obj_file_path
 
         except Exception as e:
-            raise CustomException(str(e), sys)
+            raise CustomException(e, sys)
+
