@@ -1,86 +1,117 @@
 import streamlit as st
 import pandas as pd
-import os
-from src.utils import load_object
-from src.components.data_transformation import DataTransformation
+import numpy as np
+import joblib
 
-# Initialize transformer
-data_transformer = DataTransformation()
+# Load trained model and preprocessor
+model_bundle = joblib.load("artifacts/model.pkl")
+model = model_bundle["model"]
+expected_features = model_bundle["expected_features"]
+preprocessor = joblib.load("artifacts/preprocessor.pkl")
 
-def load_model():
-    model_path = os.path.join("artifacts", "model.pkl")
-    model_bundle = load_object(model_path)
-    model = model_bundle["model"]
-    expected_features = list(model_bundle["expected_features"])
-    return model, expected_features
+st.set_page_config(page_title="SmartCloud Optimizer", layout="wide")
+st.title("📊 SmartCloud Optimizer Dashboard")
 
-def predict(input_data, from_manual=False):
-    model, expected_features = load_model()  # Load the model and expected features
+st.markdown("""
+This app predicts **CPU Allocatable** based on workload metrics and suggests smart allocation.
+You can upload workload data or manually input metrics.
+""")
 
-    # If the input is from manual entry, add dummy values for missing categorical columns
-    if from_manual:
-        # Ensure missing categorical columns are added with dummy values
-        for col in DataTransformation.categorical_columns:
-            if col not in input_data.columns:
-                input_data[col] = "dummy"  # Add missing categorical columns with dummy values
+# Helper function to make predictions
+def predict_cpu_allocatable(input_df):
+    transformed = preprocessor.transform(input_df)
+    return model.predict(transformed)
 
-    # Reorder columns to match the order the model expects (numerical columns + categorical columns)
-    input_data = input_data[DataTransformation.numerical_columns + DataTransformation.categorical_columns]
+# Sidebar input method
+st.sidebar.header("Input Options")
+input_method = st.sidebar.radio("Choose Input Method", ["Upload CSV", "Manual Input"])
 
-    # Apply the data transformation pipeline (scaling, encoding, etc.)
-    transformed_data = data_transformer.transform_uploaded_csv(input_data)
+# ======================================
+# 📁 Upload CSV Section
+# ======================================
+if input_method == "Upload CSV":
+    file = st.file_uploader("Upload your workload data CSV", type=["csv"])
+    if file:
+        df = pd.read_csv(file)
+        st.subheader("📃 Uploaded Data")
+        st.dataframe(df.head())
 
-    # Ensure the transformed data matches the expected features in the model
-    try:
-        # Try to reindex the data to match the model's feature names
-        transformed_data = transformed_data[model.feature_names_in_]
-    except AttributeError:
-        # If `feature_names_in_` is not available (common with some versions), fall back to expected_features
-        transformed_data = transformed_data.reindex(columns=expected_features, fill_value=0)
+        # ✅ Validate required columns
+        required_cols = [
+            'cpu_workloads', 'memory_workloads', 'nvidia_com_gpu_workloads',
+            'scenario_workloads', 'status', 'condition'
+        ]
+        missing = [col for col in required_cols if col not in df.columns]
 
-    # Make the prediction
-    prediction = model.predict(transformed_data)
-    return prediction
+        if missing:
+            st.error(f"Uploaded file is missing required columns: {missing}")
+        else:
+            try:
+                predictions = predict_cpu_allocatable(df)
+                df["Predicted_CPU_Allocatable"] = predictions
 
-# Streamlit UI
-st.title("Dynamic Resource Allocation Optimization")
-st.write("Upload a CSV file or manually enter data to predict resource utilization.")
+                st.subheader("🔮 Predictions")
+                st.dataframe(df)
 
-uploaded_file = st.file_uploader("Upload your dataset", type=["csv"])
+                st.subheader("📈 Prediction Trend")
 
-if uploaded_file:
-    df = pd.read_csv(uploaded_file)
-    st.write("Uploaded Data Preview:", df.head())
+                # Add a slider to choose how many rows to visualize
+                limit = st.slider("Select number of rows to visualize", min_value=100, max_value=min(len(df), 10000), step=100, value=500)
 
-    if st.button("Predict from CSV"):
+                # Plot only the first 'limit' rows
+                st.line_chart(df["Predicted_CPU_Allocatable"].head(limit))
+
+
+                csv = df.to_csv(index=False)
+                st.download_button("Download Predictions", data=csv, file_name="predicted_allocations.csv", mime="text/csv")
+            except Exception as e:
+                st.error(f"Prediction failed: {e}")
+
+# ======================================
+# 🧮 Manual Input Section
+# ======================================
+else:
+    st.subheader(":pencil2: Manual Input")
+    cpu = st.number_input("CPU Workloads", 0.0, 100.0, 30.0)
+    mem = st.number_input("Memory Workloads", 0.0, 100.0, 45.0)
+    gpu = st.number_input("GPU Workloads", 0.0, 100.0, 20.0)
+    scenario = st.number_input("Scenario Workloads", 0.0, 100.0, 10.0)
+    status = st.selectbox("Status", ["Running", "Pending", "Failed"])
+    condition = st.selectbox("Condition", ["Normal", "Degraded", "Critical"])
+
+    manual_df = pd.DataFrame([{
+        "cpu_workloads": cpu,
+        "memory_workloads": mem,
+        "nvidia_com_gpu_workloads": gpu,
+        "scenario_workloads": scenario,
+        "status": status,
+        "condition": condition
+    }])
+
+    if st.button("Predict", key="predict_manual"):
         try:
-            predictions = predict(df)
-            df["Predicted_Resource_Usage"] = predictions
-            st.write("Prediction Results:", df)
-            st.download_button("Download Predictions", df.to_csv(index=False), "predictions.csv", "text/csv")
+            prediction = predict_cpu_allocatable(manual_df)[0]
+            st.success(f"Predicted CPU Allocatable: {prediction:.2f} units")
+        except ValueError as ve:
+            st.error(f"Preprocessing Error: {ve}")
         except Exception as e:
-            st.error(f"Error during prediction: {e}")
+            st.error(f"Unexpected Error: {e}")
 
-# Manual input
-st.subheader("Or enter data manually:")
+# ======================================
+# 🔍 Model Info Section
+# ======================================
+with st.expander("🔧 Model Info"):
+    st.write("**Model Type:**", type(model).__name__)
+    st.write("**Feature Count:**", len(expected_features))
+    st.code("\n".join(expected_features))
 
-cpu_workloads = st.number_input("CPU Workloads", min_value=0.0, value=50.0)
-memory_workloads = st.number_input("Memory Workloads", min_value=0.0, value=16.0)
-nvidia_com_gpu_workloads = st.number_input("GPU Workloads", min_value=0.0, value=5.0)
-cpu_allocatable = st.number_input("CPU Allocatable", min_value=0.0, value=100.0)
-nvidia_com_gpu_allocatable = st.number_input("GPU Allocatable", min_value=0.0, value=10.0)
-
-if st.button("Predict Manually"):
-    manual_data = pd.DataFrame({
-        "cpu_workloads": [cpu_workloads],
-        "memory_workloads": [memory_workloads],
-        "nvidia_com_gpu_workloads": [nvidia_com_gpu_workloads],
-        "cpu_allocatable": [cpu_allocatable],
-        "nvidia_com_gpu_allocatable": [nvidia_com_gpu_allocatable]
-    })
-
-    try:
-        prediction = predict(manual_data, from_manual=True)
-        st.write(f"Predicted Resource Usage: {prediction[0]}")
-    except Exception as e:
-        st.error(f"Error during manual prediction: {e}")
+# ======================================
+# 📄 Logs Viewer (optional)
+# ======================================
+try:
+    with open("artifacts/logs.log", "r") as f:
+        logs = f.read()
+    with st.expander("📝 View Logs"):
+        st.text_area("Logs", logs, height=300)
+except:
+    pass
