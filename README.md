@@ -34,6 +34,12 @@
 
 ---
 
-## 📁 Project Structure
+📄 License
+MIT License — free to use, modify, and build upon.
+
+🙋‍♀️ Author
+Anshika Solanki
+Data Scientist | AI Enthusiast
+www.linkedin.com/in/anshikasolanki30 | GitHub
 
 
