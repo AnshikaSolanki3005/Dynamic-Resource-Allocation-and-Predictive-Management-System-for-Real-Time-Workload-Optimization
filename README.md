@@ -1,70 +1,39 @@
-🚀 DYNAMIC RESOURCE ALLOCATION AND PREDICTIVE MANAGEMENT SYSTEM FOR REAL-TIME WORKLOAD OPTIMIZATION
-🔧 Optimize cloud CPU usage with intelligent, real-time workload predictions using Machine Learning.
+# ⚙️ SmartCloud Optimizer
 
-🧰 Tech Stack
-🐍 Python 3.x
+**Dynamic Resource Allocation and Predictive Management System for Real-Time Workload Optimization**
 
-📊 Scikit-learn, Pandas, NumPy
+> A lightweight machine learning system that predicts how much CPU should be allocated to cloud workloads — helping improve performance and reduce waste.
 
-🧠 XGBoost, Random Forest, Linear Regression
+---
 
-🎯 Streamlit (Web UI)
+## 🚀 What It Does
 
-🧱 Joblib (Model Saving)
+- 📁 Upload or manually enter workload data  
+- 🤖 Predict optimal **CPU Allocatable** units using ML  
+- 📊 Visualize prediction trends  
+- 📥 Download results as CSV  
+- 🔍 View logs and model details — all in a clean Streamlit dashboard
 
-📈 Matplotlib / Seaborn (Optional Visualization)
+---
 
-🌟 Key Features
-📁 Upload workload data via CSV or ✍️ enter manually
+## 🧠 Tech Stack
 
-✅ Validates workload metrics (CPU, memory, GPU, etc.)
+| Category | Tools |
+|---------|--------|
+| Language | Python 3.x |
+| ML Models | XGBoost, Random Forest, Linear Regression |
+| Preprocessing | ColumnTransformer (Scaling, OneHotEncoding) |
+| App Framework | Streamlit |
+| Deployment-Ready | joblib, requirements.txt |
 
-🤖 Predicts optimal CPU Allocatable units
+---
 
-📉 Displays prediction trends with interactive graphs
+## 📸 Preview
 
-💾 Download predictions as CSV
+<img src="assets/ui_preview.png" width="100%">
 
-🪵 View backend logs for transparency
+---
 
-🧠 How It Works
-📤 Input: Provide workload metrics (CPU, memory, status, etc.)
-
-🧪 Transform: Data is preprocessed using a saved ColumnTransformer
-
-🔮 Predict: ML model forecasts how much CPU should be allocated
-
-📊 Visualize: Results shown in line charts and tables
-
-📥 Download: Get predictions in one click
-
-🌐 Web App Preview
-📌 Try both input methods – instant feedback and export-ready predictions.
-
-
-🧪 How to Run Locally
-bash
-Copy
-Edit
-git clone https://github.com/your-username/smartcloud-optimizer.git
-cd smartcloud-optimizer
-pip install -r requirements.txt
-streamlit run app.py
-📁 Project Structure
-bash
-Copy
-Edit
-├── app.py                  # Streamlit dashboard
-├── artifacts/              # Saved model & preprocessor
-│   ├── model.pkl
-│   └── preprocessor.pkl
-├── assets/                 # App screenshots & icons
-├── requirements.txt
-└── README.md
-📸 Screenshots
-CSV Upload	Manual Input	Trend Visualization
-
-📄 License
-📝 This project is licensed under the MIT License.
+## 📁 Project Structure
 
 
