@@ -1,112 +1,70 @@
-💡 DYNAMIC RESOURCE ALLOCATION AND PREDICTIVE MANAGEMENT SYSTEM FOR REAL-TIME WORKLOAD OPTIMIZATION
-Optimize Workloads, Maximize Efficiency Instantly
+🚀 DYNAMIC RESOURCE ALLOCATION AND PREDICTIVE MANAGEMENT SYSTEM FOR REAL-TIME WORKLOAD OPTIMIZATION
+🔧 Optimize cloud CPU usage with intelligent, real-time workload predictions using Machine Learning.
 
-🚀 Overview
-This project presents a machine learning-based system to predict CPU allocatable resources in real-time cloud environments. It dynamically manages and optimizes workloads using predictive modeling and intelligent recommendations.
+🧰 Tech Stack
+🐍 Python 3.x
 
-📋 Table of Contents
-Overview
+📊 Scikit-learn, Pandas, NumPy
 
-Tech Stack
+🧠 XGBoost, Random Forest, Linear Regression
 
-Features
+🎯 Streamlit (Web UI)
 
-Model Workflow
+🧱 Joblib (Model Saving)
 
-Web App Preview
+📈 Matplotlib / Seaborn (Optional Visualization)
 
-How to Run
+🌟 Key Features
+📁 Upload workload data via CSV or ✍️ enter manually
 
-Directory Structure
+✅ Validates workload metrics (CPU, memory, GPU, etc.)
 
-Screenshots
+🤖 Predicts optimal CPU Allocatable units
 
-License
+📉 Displays prediction trends with interactive graphs
 
-🛠 Tech Stack
-Python
+💾 Download predictions as CSV
 
-Streamlit
+🪵 View backend logs for transparency
 
-Scikit-learn
+🧠 How It Works
+📤 Input: Provide workload metrics (CPU, memory, status, etc.)
 
-Pandas / NumPy
-Matplotlib / Seaborn
+🧪 Transform: Data is preprocessed using a saved ColumnTransformer
 
-Joblib
+🔮 Predict: ML model forecasts how much CPU should be allocated
 
-VS Code / GitHub or Github Codespaces
+📊 Visualize: Results shown in line charts and tables
 
-✨ Features
-CSV upload & manual input for predictions.
-
-Data validation with error handling.
-
-Predicts CPU allocatable based on 6 workload metrics.
-
-Line chart visualization of prediction trends.
-
-Downloadable output file with predictions.
-
-Web app built using Streamlit (lightweight and interactive).
-
-Logs viewer and model metadata.
-
-🔁 Model Workflow
-Data Input (CSV or manual).
-
-Preprocessing with trained ColumnTransformer.
-
-Prediction using a trained ML regression model.
-
-Visualization of trends via charts.
-
-Export Results as CSV.
+📥 Download: Get predictions in one click
 
 🌐 Web App Preview
+📌 Try both input methods – instant feedback and export-ready predictions.
 
-Upload CSV or enter manually to get intelligent CPU allocatable predictions.
 
-⚙️ How to Run
-Clone the repository:
-
+🧪 How to Run Locally
 bash
 Copy
 Edit
-git clone https://github.com/your-username/your-repo.git
-cd your-repo
-Install dependencies:
-
-bash
-Copy
-Edit
+git clone https://github.com/your-username/smartcloud-optimizer.git
+cd smartcloud-optimizer
 pip install -r requirements.txt
-Run the app:
-
-bash
-Copy
-Edit
 streamlit run app.py
-📁 Directory Structure
+📁 Project Structure
 bash
 Copy
 Edit
-project/
-├── app.py                      # Streamlit web app
-├── artifacts/
-│   ├── model.pkl               # Trained model and expected features
-│   ├── preprocessor.pkl        # ColumnTransformer
-│   └── logs.log                # Log file
-├── assets/
-│   └── ui_preview.png          # Screenshot of web UI
+├── app.py                  # Streamlit dashboard
+├── artifacts/              # Saved model & preprocessor
+│   ├── model.pkl
+│   └── preprocessor.pkl
+├── assets/                 # App screenshots & icons
 ├── requirements.txt
 └── README.md
-🖼 Screenshots
-📥 CSV Upload Section:
-
-🧮 Manual Input & Prediction:
-
-📊 Prediction Graph:
+📸 Screenshots
+CSV Upload	Manual Input	Trend Visualization
 
 📄 License
-This project is licensed under the MIT License. See the LICENSE file for details.
+📝 This project is licensed under the MIT License.
+
+
