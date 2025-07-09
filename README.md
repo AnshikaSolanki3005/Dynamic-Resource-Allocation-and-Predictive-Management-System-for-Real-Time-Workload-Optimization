@@ -28,14 +28,10 @@
 
 ---
 
-## 📸 Preview
-
-<img src="assets/ui_preview.png" width="100%">
-
----
-
 📄 License
 MIT License — free to use, modify, and build upon.
+
+---
 
 🙋‍♀️ Author
 Anshika Solanki
